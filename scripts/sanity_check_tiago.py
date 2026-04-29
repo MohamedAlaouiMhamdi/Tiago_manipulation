@@ -36,11 +36,7 @@ TIAGO_USD = (
 SECONDS_PER_JOINT = 5.0
 
 # Joints to sweep, in order. "gripper" is a pseudo-entry that drives both fingers together.
-SWEEP_ORDER = [
-    "arm_1_joint", "arm_2_joint", "arm_3_joint", "arm_4_joint",
-    "arm_5_joint", "arm_6_joint", "arm_7_joint",
-    "gripper",
-]
+SWEEP_ORDER = ["gripper"]
 
 
 def paint_hsr(stage: Usd.Stage, root: str = "/World/Tiago") -> None:
@@ -109,7 +105,26 @@ def design_scene() -> Articulation:
     cfg = ArticulationCfg(
         prim_path="/World/Tiago",
         spawn=sim_utils.UsdFileCfg(usd_path=TIAGO_USD),
-        init_state=ArticulationCfg.InitialStateCfg(pos=(0.0, 0.0, 0.1)),
+        init_state=ArticulationCfg.InitialStateCfg(
+            pos=(0.0, 0.0, 0.1),
+            joint_pos={
+                # Joints baked-locked in the USD must start INSIDE their tight limits.
+                "torso_lift_joint": 0.20,
+                "head_2_joint": -0.70,
+                # Same arm "ready" pose used by the env config.
+                "arm_1_joint": 0.20,
+                "arm_2_joint": -1.34,
+                "arm_3_joint": -0.20,
+                "arm_4_joint": 1.94,
+                "arm_5_joint": -1.57,
+                "arm_6_joint": 1.37,
+                "arm_7_joint": 0.00,
+                "gripper_left_finger_joint": 0.045,
+                "gripper_right_finger_joint": 0.045,
+                "head_1_joint": 0.0,
+                "wheel_.*_joint": 0.0,
+            },
+        ),
         actuators={
             "all_joints": ImplicitActuatorCfg(
                 joint_names_expr=[".*"], stiffness=None, damping=None
